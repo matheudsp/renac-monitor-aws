@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Renac Solar Monitor
+
+Parameters:
+  RenacUserPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/user
+  RenacUser2Path:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/user2
+  RenacPassPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/password
+  RenacPass2Path:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/password2
+  RenacSenderPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/sender_email
+  RenacRecipientsPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/recipients_emails
+
+Globals:
+  Function:
+    Timeout: 60
+    MemorySize: 256
+
+Resources:
+  RenacDailyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: app.lambdaHandler
+      Runtime: nodejs24.x
+      Architectures:
+        - x86_64
+      Policies:
+        - SESCrudPolicy:
+            IdentityName: "*"
+      Environment:
+        Variables:
+          RENAC_USER: !Ref RenacUserPath
+          RENAC_USER2: !Ref RenacUser2Path
+          RENAC_PASS: !Ref RenacPassPath
+          RENAC_PASS2: !Ref RenacPass2Path
+          SENDER_EMAIL: !Ref RenacSenderPath
+          RECIPIENTS_EMAILS: !Ref RenacRecipientsPath
+          TZ: "America/Sao_Paulo"
+      Events:
+        DailySchedule:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 20 * * ? *) # UTC 20h = -3 = BRT 17h  
+            Description: Executa diariamente as 17h BRT
+            Enabled: true
+    Metadata: 
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - app.ts
+
+Outputs:
+  RenacFunctionArn:
+    Value: !GetAtt RenacDailyFunction.Arn
