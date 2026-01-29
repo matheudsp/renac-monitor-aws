@@ -1,14 +1,7 @@
 import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
+import type { ReportItem } from './types';
 
 const sesClient = new SESClient({ region: 'sa-east-1' });
-
-export interface ReportItem {
-    name: string;
-    id: number;
-    day_energy: number;
-    expected_energy: number;
-    statusText: string;
-}
 
 export async function sendEmail(data: ReportItem[]): Promise<void> {
     const sender = process.env.SENDER_EMAIL;

@@ -15,6 +15,12 @@ Parameters:
   RenacPass2Path:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /renac/prod/password2
+  PhbUserPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/phb_user
+  PhbPassPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/phb_password
   RenacSenderPath:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /renac/prod/sender_email
@@ -45,6 +51,8 @@ Resources:
           RENAC_USER2: !Ref RenacUser2Path
           RENAC_PASS: !Ref RenacPassPath
           RENAC_PASS2: !Ref RenacPass2Path
+          PHB_USER: !Ref PhbUserPath
+          PHB_PASS: !Ref PhbPassPath
           SENDER_EMAIL: !Ref RenacSenderPath
           RECIPIENTS_EMAILS: !Ref RenacRecipientsPath
           TZ: "America/Sao_Paulo"

@@ -12,7 +12,7 @@
     "compile": "tsc",
     "test": "npm run compile && npm run unit",
     "deploy": "sam deploy --stack-name renac-monitor --resolve-s3 --capabilities CAPABILITY_IAM",
-    "upload-env": "chmod -x upload-env.sh && ./upload-env.sh"
+    "upload-env": "chmod 755 upload-env.sh && ./upload-env.sh"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.966.0",

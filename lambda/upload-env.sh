@@ -23,6 +23,25 @@ aws ssm put-parameter \
     --overwrite
 
 aws ssm put-parameter \
+    --name "/renac/prod/phb_user" \
+    --value "$PHB_USER" \
+    --type "String" \
+    --overwrite
+
+aws ssm put-parameter \
+    --name "/renac/prod/phb_password" \
+    --value "$PHB_PASS" \
+    --type "String" \
+    --overwrite
+
+
+aws ssm put-parameter \
+    --name "/renac/prod/password" \
+    --value "$RENAC_PASS" \
+    --type "String" \
+    --overwrite
+
+aws ssm put-parameter \
     --name "/renac/prod/password" \
     --value "$RENAC_PASS" \
     --type "String" \
