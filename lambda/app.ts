@@ -4,6 +4,7 @@ import { sendEmail } from './mailer';
 import type { ISolarProvider, ReportItem } from './types';
 import { RenacService } from './providers/renac-service';
 import { PhbService } from './providers/phb-service';
+import { SolarmanService } from './providers/solarman-service';
 
 export const CONFIG = {
     RENAC: {
@@ -17,6 +18,16 @@ export const CONFIG = {
         LOGIN_URL: 'https://solarportalplus.com/web/sems/sems-user/api/v1/auth/cross-login',
         ACCOUNT: { user: process.env.PHB_USER!, pass: process.env.PHB_PASS! },
     },
+    SOLARMAN: {
+        API_URL: 'https://globalpro.solarmanpv.com',
+        LOGIN_PAGE_URL: 'https://globalpro.solarmanpv.com',
+        TURNSTILE_SITE_KEY: '0x4AAAAAAB3NtEA9guZfcVPY',
+        TWO_CAPTCHA_API_KEY: process.env.TWO_CAPTCHA_API_KEY!,
+        ACCOUNT: {
+            user: process.env.SOLARMAN_USER!,
+            pass: process.env.SOLARMAN_PASS!,
+        },
+    },
     GENERATION_FACTOR: 4.6,
     EMAIL: {
         SENDER: process.env.SENDER_EMAIL,
@@ -29,7 +40,7 @@ export const lambdaHandler: Handler = async (): Promise<void> => {
             throw new Error('E-mails não configurados.');
         }
 
-        const providers: ISolarProvider[] = [new RenacService(), new PhbService()];
+        const providers: ISolarProvider[] = [new RenacService(), new PhbService(), new SolarmanService()];
 
         console.log('Buscando dados de todas as APIs...');
 

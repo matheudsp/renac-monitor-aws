@@ -65,4 +65,8 @@ aws ssm put-parameter \
     --type "String" \
     --overwrite
 
+aws ssm put-parameter --name /renac/prod/solarman_user     --value "$SOLARMAN_USER"   --type "String" --overwrite
+aws ssm put-parameter --name /renac/prod/solarman_password --value "$SOLARMAN_PASSWORD"   --type "String" --overwrite
+aws ssm put-parameter --name /renac/prod/two_captcha_api_key --value "$TWO_CAPTCHA_API_KEY" --type "String" --overwrite
+
 echo "✅ Sucesso! Credenciais enviadas para a nuvem."

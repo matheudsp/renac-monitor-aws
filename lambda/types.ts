@@ -4,7 +4,7 @@ export interface IStandardStation {
     capacity: number; // Potência instalada (kW)
     dayEnergy: number; // Geração do dia (kWh)
     isOnline: boolean;
-    provider: 'RENAC' | 'PHB';
+    provider: 'RENAC' | 'PHB' | 'SOLARMAN';
 }
 
 export interface ISolarProvider {
@@ -58,6 +58,35 @@ export interface IPhbListResponse {
             status: number; // 0 = Sem geração/Offline e 1 = Normal/Gerando
         }[];
     };
+}
+
+export interface ISolarmanLoginResponse {
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    scope: string;
+}
+
+export interface ISolarmanDevice {
+    id: number;
+    siteId: number;
+    systemId: number; // ID único da estação (usado para agrupar)
+    systemName: string; // Nome da estação (fallback)
+    stationName: string | null; // Nome da estação (preferencial)
+    deviceSn: string;
+    type: string; // "INVERTER"
+    netState: number; // 1 = Online | 0 = Offline (comunicação do coletor)
+    deviceState: number; // 1 = Normal | 2 = Alerta | 3 = Offline/Sem comunicação
+    alertState: number; // -1 = Sem alerta | 1 = Com alerta
+    generationPower: number; // Potência atual (W)
+    dailyPowerGeneration: number; // Geração do dia (kWh)
+    installedCapacity: number | null; // Capacidade instalada (kW) — null neste endpoint
+    timeZone: string;
+}
+
+export interface ISolarmanDeviceListResponse {
+    total: number;
+    data: ISolarmanDevice[];
 }
 
 export interface ReportItem {

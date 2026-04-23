@@ -21,6 +21,15 @@ Parameters:
   PhbPassPath:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /renac/prod/phb_password
+  SolarmanUserPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/solarman_user
+  SolarmanPassPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/solarman_password
+  TwoCaptchaApiKeyPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/two_captcha_api_key
   RenacSenderPath:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /renac/prod/sender_email
@@ -30,7 +39,7 @@ Parameters:
 
 Globals:
   Function:
-    Timeout: 60
+    Timeout: 120 # Aumentado para acomodar resolução do Turnstile (~30-90s)
     MemorySize: 256
 
 Resources:
@@ -53,6 +62,9 @@ Resources:
           RENAC_PASS2: !Ref RenacPass2Path
           PHB_USER: !Ref PhbUserPath
           PHB_PASS: !Ref PhbPassPath
+          SOLARMAN_USER: !Ref SolarmanUserPath
+          SOLARMAN_PASS: !Ref SolarmanPassPath
+          TWO_CAPTCHA_API_KEY: !Ref TwoCaptchaApiKeyPath
           SENDER_EMAIL: !Ref RenacSenderPath
           RECIPIENTS_EMAILS: !Ref RenacRecipientsPath
           TZ: "America/Sao_Paulo"
