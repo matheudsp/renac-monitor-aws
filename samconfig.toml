@@ -1,0 +1,13 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "eldorado-reports"
+resolve_s3 = true
+s3_prefix = "eldorado-reports"
+region = "sa-east-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "RenacUserPath=\"/renac/prod/user\" RenacUser2Path=\"/renac/prod/user2\" RenacPassPath=\"/renac/prod/password\" RenacPass2Path=\"/renac/prod/password2\" PhbUserPath=\"/renac/prod/phb_user\" PhbPassPath=\"/renac/prod/phb_password\" SolarmanUserPath=\"/renac/prod/solarman_user\" SolarmanPassPath=\"/renac/prod/solarman_password\" TwoCaptchaApiKeyPath=\"/renac/prod/two_captcha_api_key\" RenacSenderPath=\"/renac/prod/sender_email\" RenacRecipientsPath=\"/renac/prod/recipients_emails\""
+image_repositories = []
+
+[default.global.parameters]
+region = "sa-east-1"

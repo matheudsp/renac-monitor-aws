@@ -2,118 +2,89 @@ import type {
     ISolarProvider,
     IStandardStation,
     ISolarmanLoginResponse,
-    ISolarmanDeviceListResponse,
-    ISolarmanDevice,
+    ISolarmanStationSearchResponse,
+    ISolarmanStationItem,
 } from '../types';
 import { CONFIG } from '../app';
 import { resolveTurnstile } from '../captcha';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 50;
 
 export class SolarmanService implements ISolarProvider {
     async getStations(): Promise<IStandardStation[]> {
         try {
             const accessToken = await this.login();
-            const allDevices = await this.fetchAllDevices(accessToken);
-            return this.groupDevicesByStation(allDevices);
+            const allStations = await this.fetchAllStations(accessToken);
+
+            console.log(`[SOLARMAN] ${allStations.length} estações carregadas`);
+            return allStations;
         } catch (error) {
             console.error('[SOLARMAN] Falha ao processar conta', error);
             return [];
         }
     }
 
-    // ─── Busca todas as páginas de dispositivos ───────────────────
+    // ─── Busca todas as páginas de estações ───────────────────────
 
-    private async fetchAllDevices(accessToken: string): Promise<ISolarmanDevice[]> {
-        const firstPage = await this.fetchDevicePage(accessToken, 1);
+    private async fetchAllStations(accessToken: string): Promise<IStandardStation[]> {
+        const firstPage = await this.fetchStationPage(accessToken, 1);
         const total = firstPage.total;
         const totalPages = Math.ceil(total / PAGE_SIZE);
 
-        console.log(`[SOLARMAN] Total de dispositivos: ${total} — ${totalPages} página(s)`);
+        console.log(`[SOLARMAN] Total de estações: ${total} — ${totalPages} página(s)`);
 
-        const allDevices: ISolarmanDevice[] = [...firstPage.data];
+        const allItems: ISolarmanStationItem[] = [...firstPage.data];
 
         if (totalPages > 1) {
             const remainingPages = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-            const results = await Promise.all(remainingPages.map((page) => this.fetchDevicePage(accessToken, page)));
-            results.forEach((r) => allDevices.push(...r.data));
+            const results = await Promise.all(remainingPages.map((page) => this.fetchStationPage(accessToken, page)));
+            results.forEach((r) => allItems.push(...r.data));
         }
 
-        return allDevices;
+        return allItems.map((item) => this.mapToStandardStation(item));
     }
 
-    private async fetchDevicePage(accessToken: string, page: number): Promise<ISolarmanDeviceListResponse> {
+    private async fetchStationPage(accessToken: string, page: number): Promise<ISolarmanStationSearchResponse> {
         const params = new URLSearchParams({
             page: String(page),
             size: String(PAGE_SIZE),
-            'snorder.direction': 'ASC',
-            'snorder.property': 'name',
-            powerTypeList: 'PV',
+            'order.direction': 'ASC',
+            'order.property': 'name',
         });
 
-        const res = await fetch(
-            `${CONFIG.SOLARMAN.API_URL}/maintain-s/operating/system/device/INVERTER/list?${params}`,
-            {
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json, text/plain, */*',
-                    Authorization: `Bearer ${accessToken}`,
-                },
+        const res = await fetch(`${CONFIG.SOLARMAN.AGG_API_URL}/maintain-s/operating/station/v2/search?${params}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+                Accept: 'application/json, text/plain, */*',
+                Authorization: `Bearer ${accessToken}`,
             },
-        );
+            body: JSON.stringify({}),
+        });
 
         if (!res.ok) {
-            throw new Error(`[SOLARMAN] Erro ao buscar dispositivos (página ${page}): HTTP ${res.status}`);
+            throw new Error(`[SOLARMAN] Erro ao buscar estações (página ${page}): HTTP ${res.status}`);
         }
 
-        return res.json() as Promise<ISolarmanDeviceListResponse>;
+        return res.json() as Promise<ISolarmanStationSearchResponse>;
     }
 
-    // ─── Agrupa inversores por estação, somando geração ───────────
+    // ─── Mapeia item da API para IStandardStation ─────────────────
 
-    private groupDevicesByStation(devices: ISolarmanDevice[]): IStandardStation[] {
-        const stationMap = new Map<
-            number,
-            { name: string; dayEnergy: number; hasOnlineDevice: boolean; capacity: number }
-        >();
+    private mapToStandardStation(item: ISolarmanStationItem): IStandardStation {
+        const s = item.station;
 
-        for (const device of devices) {
-            const stationId = device.systemId;
-            const existing = stationMap.get(stationId);
+        // networkStatus: "NORMAL" | "ALL_OFFLINE" | "PARTIAL_OFFLINE"
+        const isOnline = s.networkStatus === 'NORMAL' || s.networkStatus === 'PARTIAL_OFFLINE';
 
-            // deviceState: 1 = Normal/Gerando | 2 = Alerta | 3 = Offline/Sem comunicação
-            const isDeviceOnline = device.deviceState === 1;
-
-            if (existing) {
-                existing.dayEnergy += device.dailyPowerGeneration ?? 0;
-                existing.hasOnlineDevice = existing.hasOnlineDevice || isDeviceOnline;
-            } else {
-                stationMap.set(stationId, {
-                    name: device.stationName ?? device.systemName ?? String(stationId),
-                    dayEnergy: device.dailyPowerGeneration ?? 0,
-                    // installedCapacity vem null neste endpoint — capacity ficará 0
-                    // e a geração esperada não será calculada até outro endpoint ser mapeado
-                    capacity: device.installedCapacity ?? 0,
-                    hasOnlineDevice: isDeviceOnline,
-                });
-            }
-        }
-
-        const stations: IStandardStation[] = [];
-
-        stationMap.forEach((value, stationId) => {
-            stations.push({
-                id: stationId,
-                name: value.name,
-                capacity: value.capacity,
-                dayEnergy: Number(value.dayEnergy.toFixed(2)),
-                isOnline: value.hasOnlineDevice,
-                provider: 'SOLARMAN',
-            });
-        });
-
-        console.log(`[SOLARMAN] ${stations.length} estações agrupadas de ${devices.length} dispositivos`);
-        return stations;
+        return {
+            id: s.id,
+            name: s.name.trim(),
+            capacity: s.installedCapacity ?? 0,
+            dayEnergy: s.generationValue ?? 0,
+            isOnline,
+            provider: 'SOLARMAN',
+        };
     }
 
     // ─── Login com Turnstile via 2captcha ─────────────────────────

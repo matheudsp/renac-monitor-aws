@@ -21,6 +21,7 @@ export const CONFIG = {
     SOLARMAN: {
         API_URL: 'https://globalpro.solarmanpv.com',
         LOGIN_PAGE_URL: 'https://globalpro.solarmanpv.com',
+        AGG_API_URL: 'https://pro.solarmanpv.com',
         TURNSTILE_SITE_KEY: '0x4AAAAAAB3NtEA9guZfcVPY',
         TWO_CAPTCHA_API_KEY: process.env.TWO_CAPTCHA_API_KEY!,
         ACCOUNT: {
@@ -59,7 +60,7 @@ export const lambdaHandler: Handler = async (): Promise<void> => {
         const reportDataToEmail: ReportItem[] = allStations.map((s) => {
             const expected = s.capacity * CONFIG.GENERATION_FACTOR;
 
-            const providerTag = s.provider === 'RENAC' ? '[RENAC]' : '[PHB]';
+            const providerTag = s.provider === 'RENAC' ? '[RENAC]' : s.provider === 'SOLARMAN' ? '[SOLARMAN]' : '[PHB]';
 
             return {
                 name: `${providerTag} ${s.name}`,

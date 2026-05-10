@@ -67,26 +67,25 @@ export interface ISolarmanLoginResponse {
     scope: string;
 }
 
-export interface ISolarmanDevice {
-    id: number;
-    siteId: number;
-    systemId: number; // ID único da estação (usado para agrupar)
-    systemName: string; // Nome da estação (fallback)
-    stationName: string | null; // Nome da estação (preferencial)
-    deviceSn: string;
-    type: string; // "INVERTER"
-    netState: number; // 1 = Online | 0 = Offline (comunicação do coletor)
-    deviceState: number; // 1 = Normal | 2 = Alerta | 3 = Offline/Sem comunicação
-    alertState: number; // -1 = Sem alerta | 1 = Com alerta
-    generationPower: number; // Potência atual (W)
-    dailyPowerGeneration: number; // Geração do dia (kWh)
-    installedCapacity: number | null; // Capacidade instalada (kW) — null neste endpoint
-    timeZone: string;
+export interface ISolarmanStationItem {
+    station: {
+        id: number;
+        name: string;
+        installedCapacity: number | null; // kW
+        generationValue: number | null; // kWh do dia
+        generationPower: number | null; // W atual
+        // "NORMAL" | "ALL_OFFLINE" | "PARTIAL_OFFLINE"
+        networkStatus: string | null;
+        businessWarningStatus: string | null;
+        consumerWarningStatus: string | null;
+        locationAddress: string | null;
+        regionTimezone: string | null;
+    };
 }
 
-export interface ISolarmanDeviceListResponse {
+export interface ISolarmanStationSearchResponse {
     total: number;
-    data: ISolarmanDevice[];
+    data: ISolarmanStationItem[];
 }
 
 export interface ReportItem {
