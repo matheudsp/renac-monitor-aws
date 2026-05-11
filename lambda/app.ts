@@ -21,9 +21,9 @@ export const CONFIG = {
     SOLARMAN: {
         API_URL: 'https://globalpro.solarmanpv.com',
         LOGIN_PAGE_URL: 'https://globalpro.solarmanpv.com',
-        AGG_API_URL: 'https://pro.solarmanpv.com',
         TURNSTILE_SITE_KEY: '0x4AAAAAAB3NtEA9guZfcVPY',
         TWO_CAPTCHA_API_KEY: process.env.TWO_CAPTCHA_API_KEY!,
+        ORG_ID: process.env.SOLARMAN_ORG_ID!,
         ACCOUNT: {
             user: process.env.SOLARMAN_USER!,
             pass: process.env.SOLARMAN_PASS!,
@@ -35,6 +35,7 @@ export const CONFIG = {
         RECIPIENTS: process.env.RECIPIENTS_EMAILS,
     },
 };
+
 export const lambdaHandler: Handler = async (): Promise<void> => {
     try {
         if (!CONFIG.EMAIL.SENDER || !CONFIG.EMAIL.RECIPIENTS) {
@@ -47,7 +48,6 @@ export const lambdaHandler: Handler = async (): Promise<void> => {
 
         const results = await Promise.all(providers.map((p) => p.getStations()));
 
-        // "Flat" junta o array de arrays em um array único de IStandardStation
         const allStations = results.flat();
 
         console.log(`Total de plantas encontradas: ${allStations.length}`);

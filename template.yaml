@@ -27,6 +27,9 @@ Parameters:
   SolarmanPassPath:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /renac/prod/solarman_password
+  SolarmanOrgIdPath:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /renac/prod/solarman_org_id
   TwoCaptchaApiKeyPath:
     Type: 'AWS::SSM::Parameter::Value<String>'
     Default: /renac/prod/two_captcha_api_key
@@ -39,7 +42,7 @@ Parameters:
 
 Globals:
   Function:
-    Timeout: 120 # Aumentado para acomodar resolução do Turnstile (~30-90s)
+    Timeout: 300 # Aumentado: Turnstile (~90s) + 2 logins + busca de plantas
     MemorySize: 256
 
 Resources:
@@ -64,6 +67,7 @@ Resources:
           PHB_PASS: !Ref PhbPassPath
           SOLARMAN_USER: !Ref SolarmanUserPath
           SOLARMAN_PASS: !Ref SolarmanPassPath
+          SOLARMAN_ORG_ID: !Ref SolarmanOrgIdPath
           TWO_CAPTCHA_API_KEY: !Ref TwoCaptchaApiKeyPath
           SENDER_EMAIL: !Ref RenacSenderPath
           RECIPIENTS_EMAILS: !Ref RenacRecipientsPath
@@ -72,16 +76,16 @@ Resources:
         DailySchedule:
           Type: Schedule
           Properties:
-            Schedule: cron(0 20 * * ? *) # UTC 20h = -3 = BRT 17h  
+            Schedule: cron(0 20 * * ? *) # UTC 20h = BRT 17h
             Description: Executa diariamente as 17h BRT
             Enabled: true
-    Metadata: 
+    Metadata:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
         Target: "es2020"
         Sourcemap: true
-        EntryPoints: 
+        EntryPoints:
         - app.ts
 
 Outputs:
