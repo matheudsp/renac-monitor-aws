@@ -17,13 +17,14 @@
   "dependencies": {
     "@aws-sdk/client-ses": "^3.966.0",
     "axios": "^1.13.2",
+    "crypto": "^1.0.1",
     "esbuild": "^0.14.14"
   },
   "devDependencies": {
     "@jest/globals": "^29.2.0",
     "@types/aws-lambda": "^8.10.92",
     "@types/jest": "^29.2.0",
-    "@types/node": "^20.5.7",
+    "@types/node": "^20.19.41",
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
     "eslint": "^8.8.0",

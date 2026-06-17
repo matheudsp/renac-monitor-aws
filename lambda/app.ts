@@ -8,7 +8,7 @@ import { SolarmanService } from './providers/solarman-service';
 
 export const CONFIG = {
     RENAC: {
-        API_URL: 'https://sec.bg.renacpower.cn:8084/api',
+        API_URL: 'https://america.renacpower.com:8084/api',
         ACCOUNTS: [
             { user: process.env.RENAC_USER!, pass: process.env.RENAC_PASS! },
             { user: process.env.RENAC_USER2!, pass: process.env.RENAC_PASS2! },
