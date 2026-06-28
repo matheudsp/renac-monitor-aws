@@ -16,9 +16,9 @@ export async function sendEmail(data: ReportItem[]): Promise<void> {
     const dateStr = new Date().toLocaleDateString('pt-BR');
 
     if (offlineCount > 0) {
-        subject = `⚠️ ALERTA: ${offlineCount} Usina(s) Offline - Relatório ${dateStr}`;
+        subject = `⚠️ ALERTA: ${offlineCount} Usina(s) Offline - Relatório Solar Jorge Batista${dateStr}`;
     } else {
-        subject = `✅ Os sistemas estão saudáveis - Relatório Solar (${dateStr})`;
+        subject = `✅ Os sistemas estão saudáveis - Relatório Solar Jorge Batista (${dateStr})`;
     }
 
     const tableRows = data
@@ -52,7 +52,7 @@ export async function sendEmail(data: ReportItem[]): Promise<void> {
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f4f4f4; padding: 20px;">
             
             <div style="background-color: #2c3e50; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-                <h2 style="color: #ffffff; margin: 0; font-size: 20px;">Monitoramento Solar Eldorado</h2>
+                <h2 style="color: #ffffff; margin: 0; font-size: 20px;">Monitoramento Solar Jorge Batista</h2>
             </div>
 
             <div style="background-color: #ffffff; padding: 20px; border: 1px solid #ddd; border-top: none;">

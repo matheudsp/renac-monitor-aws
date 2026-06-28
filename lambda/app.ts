@@ -2,22 +2,10 @@ import type { Handler } from 'aws-lambda';
 import { type AxiosError } from 'axios';
 import { sendEmail } from './mailer';
 import type { ISolarProvider, ReportItem } from './types';
-import { RenacService } from './providers/renac-service';
-import { PhbService } from './providers/phb-service';
 import { SolarmanService } from './providers/solarman-service';
+import { ElekeeperService } from './providers/elekeeper-service';
 
 export const CONFIG = {
-    RENAC: {
-        API_URL: 'https://america.renacpower.com:8084/api',
-        ACCOUNTS: [
-            { user: process.env.RENAC_USER!, pass: process.env.RENAC_PASS! },
-            { user: process.env.RENAC_USER2!, pass: process.env.RENAC_PASS2! },
-        ],
-    },
-    PHB: {
-        LOGIN_URL: 'https://solarportalplus.com/web/sems/sems-user/api/v1/auth/cross-login',
-        ACCOUNT: { user: process.env.PHB_USER!, pass: process.env.PHB_PASS! },
-    },
     SOLARMAN: {
         API_URL: 'https://globalpro.solarmanpv.com',
         LOGIN_PAGE_URL: 'https://globalpro.solarmanpv.com',
@@ -27,6 +15,13 @@ export const CONFIG = {
         ACCOUNT: {
             user: process.env.SOLARMAN_USER!,
             pass: process.env.SOLARMAN_PASS!,
+        },
+    },
+    ELEKEEPER: {
+        API_URL: 'https://iop.saj-electric.com',
+        ACCOUNT: {
+            user: process.env.ELEKEEPER_USER!,
+            pass: process.env.ELEKEEPER_PASS!,
         },
     },
     GENERATION_FACTOR: 4.6,
@@ -42,7 +37,8 @@ export const lambdaHandler: Handler = async (): Promise<void> => {
             throw new Error('E-mails não configurados.');
         }
 
-        const providers: ISolarProvider[] = [new RenacService(), new PhbService(), new SolarmanService()];
+        // const providers: ISolarProvider[] = [new SolarmanService(), new ElekeeperService()];
+        const providers: ISolarProvider[] = [new SolarmanService()];
 
         console.log('Buscando dados de todas as APIs...');
 
@@ -60,7 +56,8 @@ export const lambdaHandler: Handler = async (): Promise<void> => {
         const reportDataToEmail: ReportItem[] = allStations.map((s) => {
             const expected = s.capacity * CONFIG.GENERATION_FACTOR;
 
-            const providerTag = s.provider === 'RENAC' ? '[RENAC]' : s.provider === 'SOLARMAN' ? '[SOLARMAN]' : '[PHB]';
+            const providerTag =
+                s.provider === 'SOLARMAN' ? '[SOLARMAN]' : s.provider === 'ELEKEEPER' ? '[ELEKEEPER]' : '[UNKNOWN]';
 
             return {
                 name: `${providerTag} ${s.name}`,

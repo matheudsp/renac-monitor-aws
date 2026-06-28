@@ -1,52 +1,45 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
-Description: Renac Solar Monitor
+Description: Jorge Solar Monitor
 
 Parameters:
-  RenacUserPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/user
-  RenacUser2Path:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/user2
-  RenacPassPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/password
-  RenacPass2Path:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/password2
-  PhbUserPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/phb_user
-  PhbPassPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/phb_password
+  # ── Solarman ──────────────────────────────────────────────────────────────
   SolarmanUserPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/solarman_user
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: /jorge/prod/solarman_user
   SolarmanPassPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/solarman_password
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: /jorge/prod/solarman_password
   SolarmanOrgIdPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/solarman_org_id
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: /jorge/prod/solarman_org_id
   TwoCaptchaApiKeyPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/two_captcha_api_key
-  RenacSenderPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/sender_email
-  RenacRecipientsPath:
-    Type: 'AWS::SSM::Parameter::Value<String>'
-    Default: /renac/prod/recipients_emails
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: /jorge/prod/two_captcha_api_key
+
+  # ── Elekeeper (SAJ iop) ───────────────────────────────────────────────────
+  ElekeeperUserPath:
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: /jorge/prod/elekeeper_user
+  ElekeeperPassPath:
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: /jorge/prod/elekeeper_password
+
+  # ── E-mail ────────────────────────────────────────────────────────────────
+  SenderPath:
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: /jorge/prod/sender_email
+  RecipientsPath:
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Default: /jorge/prod/recipients_emails
 
 Globals:
   Function:
-    Timeout: 300 # Aumentado: Turnstile (~90s) + 2 logins + busca de plantas
+    Timeout: 300 # Turnstile (~90s) + logins + busca de plantas
     MemorySize: 256
 
 Resources:
-  RenacDailyFunction:
+  JorgeSolarFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: lambda/
@@ -59,25 +52,21 @@ Resources:
             IdentityName: "*"
       Environment:
         Variables:
-          RENAC_USER: !Ref RenacUserPath
-          RENAC_USER2: !Ref RenacUser2Path
-          RENAC_PASS: !Ref RenacPassPath
-          RENAC_PASS2: !Ref RenacPass2Path
-          PHB_USER: !Ref PhbUserPath
-          PHB_PASS: !Ref PhbPassPath
           SOLARMAN_USER: !Ref SolarmanUserPath
           SOLARMAN_PASS: !Ref SolarmanPassPath
           SOLARMAN_ORG_ID: !Ref SolarmanOrgIdPath
           TWO_CAPTCHA_API_KEY: !Ref TwoCaptchaApiKeyPath
-          SENDER_EMAIL: !Ref RenacSenderPath
-          RECIPIENTS_EMAILS: !Ref RenacRecipientsPath
+          ELEKEEPER_USER: !Ref ElekeeperUserPath
+          ELEKEEPER_PASS: !Ref ElekeeperPassPath
+          SENDER_EMAIL: !Ref SenderPath
+          RECIPIENTS_EMAILS: !Ref RecipientsPath
           TZ: "America/Sao_Paulo"
       Events:
         DailySchedule:
           Type: Schedule
           Properties:
             Schedule: cron(0 20 * * ? *) # UTC 20h = BRT 17h
-            Description: Executa diariamente as 17h BRT
+            Description: Executa diariamente às 17h BRT
             Enabled: true
     Metadata:
       BuildMethod: esbuild
@@ -86,8 +75,8 @@ Resources:
         Target: "es2020"
         Sourcemap: true
         EntryPoints:
-        - app.ts
+          - app.ts
 
 Outputs:
-  RenacFunctionArn:
-    Value: !GetAtt RenacDailyFunction.Arn
+  JorgeSolarFunctionArn:
+    Value: !GetAtt JorgeSolarFunction.Arn
